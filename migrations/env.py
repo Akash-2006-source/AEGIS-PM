@@ -43,6 +43,14 @@ if config.config_file_name is not None:
 # ── Build DSN from env vars (sync psycopg2 URL for Alembic) ──────────────────
 
 def _dsn() -> str:
+    # Render (and most PaaS) provide a single DATABASE_URL.
+    # Fall back to individual vars for local dev.
+    url = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_URI")
+    if url:
+        # Render uses postgres:// scheme; SQLAlchemy needs postgresql+psycopg2://
+        url = url.replace("postgres://", "postgresql+psycopg2://", 1)
+        url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
+        return url
     return (
         "postgresql+psycopg2://"
         f"{os.environ['POSTGRES_USER']}:{os.environ['POSTGRES_PASSWORD']}"

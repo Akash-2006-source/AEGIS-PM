@@ -85,6 +85,12 @@ _TRANSITIONS: dict[str, set[str]] = {
 # ── Database ──────────────────────────────────────────────────────────────────
 
 def _dsn() -> str:
+    # Render provides a single DATABASE_URL; fall back to individual vars for local dev.
+    url = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_URI")
+    if url:
+        url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
     return (
         "postgresql+asyncpg://"
         f"{os.environ['POSTGRES_USER']}:{os.environ['POSTGRES_PASSWORD']}"
